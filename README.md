@@ -80,6 +80,9 @@ Examples:
 
 # Revision History
 
+###version 1.0.4 28-05-2020
+* Showing same latency info for the last hope. Increased number of ping limitation to 10
+
 ### version 1.0.3 24-11-2016
 * Add support for HSRP routers (fix provided by Dresco)
 

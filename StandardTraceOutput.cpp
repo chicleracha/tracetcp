@@ -73,8 +73,7 @@ void StandardTraceOutput::pingResultTimeout ()
 
 void StandardTraceOutput::destinationReached (net::InetAddress& respFrom, DWORD pingTime, bool portOpen)
 {
-    cout << "Destination Reached in " << pingTime << " ms. ";
-        
+    cout << respFrom.getIPAddressAsString() << "\n Destination Reached in " << pingTime << " ms. ";
     if (portOpen)
         cout << "Connection established to " << respFrom.getIPAddressAsString();
     else

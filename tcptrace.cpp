@@ -276,6 +276,11 @@ void doTraceTCP (TCPTraceSettings& settings, ITraceOutput& out, TraceTerminator&
                 }
                 else if (respType == TCP_SYNACK)
                 {
+                    for (DWORD m = 0; (m < settings.pingsPerHop) & !hopComplete; m++)
+                    {
+                        doTCPPing(rawInterface, target, rawInterface->getSourceAddress(), hop, resp, pingTime, settings.maxTimeout);
+                        out.pingResultGood(resp, pingTime);
+                    }
                     out.destinationReached (resp, pingTime, true);
                     traceComplete = true;
                     hopComplete = true;
@@ -297,10 +302,12 @@ void doTraceTCP (TCPTraceSettings& settings, ITraceOutput& out, TraceTerminator&
             }
 
             if (traceComplete)
+                
                 break;
-
+            
             out.endHop ();
         }
+
         out.endTrace();
     }
 }

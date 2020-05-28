@@ -56,7 +56,7 @@ void CondensedTraceOutput::pingResultTimeout ()
 
 void CondensedTraceOutput::destinationReached (net::InetAddress& respFrom, DWORD pingTime, bool portOpen)
 {
-    cout << "Dest. in " << pingTime << " ms. ";
+    cout << respFrom.getIPAddressAsString() << "\n Dest. in " << pingTime << " ms. ";
         
     if (portOpen)
         cout << "Port OPEN on " << respFrom.getIPAddressAsString();
