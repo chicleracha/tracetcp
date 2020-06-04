@@ -80,7 +80,7 @@ Examples:
 
 # Revision History
 
-###version 1.0.4 28-05-2020
+### version 1.0.4 28-05-2020
 * Showing same latency info for the last hop. Increased number of ping limitation to 10
 
 ### version 1.0.3 24-11-2016
