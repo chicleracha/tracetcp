@@ -50,7 +50,7 @@ const char optionCharUseRawSock  = 'R';
 
 void displayVersion ()
 {
-    cout << endl << "tracetcp v1.0.3 (c) 2016 L.M.Witek" << endl << "build date: " << __DATE__ << " " << __TIME__ << endl;
+    cout << endl << "tracetcp v1.0.4 (c) 2016 L.M.Witek" << endl << "build date: " << __DATE__ << " " << __TIME__ << endl;
     cout << "Homepage: http://SimulatedSimian.github.io/tracetcp" << endl;
     cout << "Issues? visit: https://github.com/SimulatedSimian/tracetcp/issues" << endl << endl;
 }
@@ -106,7 +106,7 @@ bool populateSettings(neo::CommandOptionParser& cp, TCPTraceSettings& settings)
         settings.startHop       = cp.getOption(optionCharStartHop).getParamAsInt(0, 1, 255, 1);
         settings.maxTimeout     = cp.getOption(optionCharTimeout).getParamAsInt(0, 1, 99999, 4000);
         settings.portRange      = cp.getOption(optionCharPortRange).isPresent();
-        settings.pingsPerHop    = cp.getOption(optionCharPingsPerHop).getParamAsInt(0, 1, 5, 3);
+        settings.pingsPerHop    = cp.getOption(optionCharPingsPerHop).getParamAsInt(0, 1, 10, 3);
         if (settings.portRange) 
         {
             settings.startPort  = cp.getOption(optionCharPortRange).getParamAsInt(0, 0, 0xffff, 0);
