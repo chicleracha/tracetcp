@@ -37,6 +37,12 @@ void CondensedTraceOutput::startHop (int hopNumber)
     m_goodPings = 0;
 }
 
+
+void CondensedTraceOutput::MaxUnresposiveHopsActive (int hoptimer)
+{
+    cout << "\n WARNING!! The program will abort after " << hoptimer << " consecutive unresponsive hops. \n" << endl;
+}
+
 void CondensedTraceOutput::pingResultGood (net::InetAddress& respFrom, DWORD pingTime)
 {
     cout << pingTime << " ms" << "\t";
@@ -56,7 +62,7 @@ void CondensedTraceOutput::pingResultTimeout ()
 
 void CondensedTraceOutput::destinationReached (net::InetAddress& respFrom, DWORD pingTime, bool portOpen)
 {
-    cout << "Dest. in " << pingTime << " ms. ";
+    cout << respFrom.getIPAddressAsString() << "\t \n Dest. in " << pingTime << " ms. ";
         
     if (portOpen)
         cout << "Port OPEN on " << respFrom.getIPAddressAsString();
@@ -89,6 +95,8 @@ void CondensedTraceOutput::endHop ()
     }
 }
 
-void CondensedTraceOutput::endTrace ()
+
+void CondensedTraceOutput::endTrace (DWORD traceTime)
 {
+    cout << "Trace Completed in" << traceTime << " seconds. " << endl;
 }

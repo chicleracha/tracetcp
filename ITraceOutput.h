@@ -34,9 +34,10 @@ class ITraceOutput
         virtual void pingResultGood (net::InetAddress& respFrom, DWORD pingTime) = 0;
         virtual void pingResultBad (net::InetAddress& respFrom, std::string message) = 0;
         virtual void pingResultTimeout () = 0;
+        virtual void MaxUnresposiveHopsActive (int hoptimer) = 0;
         virtual void destinationReached (net::InetAddress& respFrom, DWORD pingTime, bool portOpen) = 0;
         virtual void endHop () = 0;
-        virtual void endTrace () = 0;
+        virtual void endTrace (DWORD traceTime) = 0;
 };
 
 #endif

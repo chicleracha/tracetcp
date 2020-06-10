@@ -70,6 +70,12 @@ Options:
     -g address    use the specified host as a a gateway to remote
                   systems rather than the default gateway.
 
+    -X            aborts the trace after a number of consecutive unresponsive 
+		  hops. A hop can seem unresponsive due to either timeouts or 
+		  because it limits responses. This can make the trace to 
+		  constantly output "*"s until the Max number of Hops setting 
+		  is reached. This option prevents it by killing the trace after 
+		  a number of consecutive unresponsive hops.
 
 Examples:
     tracetcp www.microsoft.com:80 -m 60
@@ -80,8 +86,12 @@ Examples:
 
 # Revision History
 
+### version 1.0.5 10-06-2020
+* Added -X option to kill the trace after a number of unresponsive hops.
+* Elapsed time is shown when completing the trace
+
 ### version 1.0.4 28-05-2020
-* Showing same latency info for the last hop. Increased number of ping limitation to 10
+* Showing same latency info for the last hop. Increased number of ping limitation to 50
 
 ### version 1.0.3 24-11-2016
 * Add support for HSRP routers (fix provided by Dresco)

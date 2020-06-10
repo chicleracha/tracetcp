@@ -40,9 +40,10 @@ class CondensedTraceOutput : public ITraceOutput
         void pingResultGood (net::InetAddress& respFrom, DWORD pingTime);
         void pingResultBad (net::InetAddress& respFrom, std::string message);
         void pingResultTimeout ();
+        void MaxUnresposiveHopsActive (int hoptimer);
         void destinationReached (net::InetAddress& respFrom, DWORD pingTime, bool portOpen);
         void endHop ();
-        void endTrace ();
+        void endTrace (DWORD traceTime);
 };
 
 #endif

@@ -21,6 +21,9 @@
 //
 
 #include <cstdlib>
+#include <iostream>
+#include <cstdio>
+#include "neo\time.h"
 #include "packet\PacketDefs.h"
 #include "net\socket.h"
 #include "neo\TimeOut.h"
@@ -196,7 +199,10 @@ ResponsePacketTypes doTCPPing (neo::RefPtr<IRawPacketInterface> rawInterface, co
     return respType;
 }
 
-
+//void resetUnresponsiveHops(TCPTraceSettings& settings)
+//{
+//    DWORD unResposiveCounter = settings.MaxUnresponHops;
+//}
 
 void doTraceTCP (TCPTraceSettings& settings, ITraceOutput& out, TraceTerminator& terminator)
 {    
@@ -224,90 +230,125 @@ void doTraceTCP (TCPTraceSettings& settings, ITraceOutput& out, TraceTerminator&
 		rawInterface->overrideGateway(net::InetAddress(settings.forceGW.c_str()));
 
 	rawInterface->initialise(target);
+    
+    clock_t start;
+    double duration;
 
-	for (DWORD port = settings.startPort; port <= settings.endPort; port++)
+    start = clock();
+    
+    for (DWORD port = settings.startPort; port <= settings.endPort; port++)
     {
-        target.setPortNumber ((u_short)port);
+        target.setPortNumber((u_short)port);
 
         bool traceComplete = false;
-        out.startTrace (target, settings.noRDNS, settings.maxHops, false);
+        out.startTrace(target, settings.noRDNS, settings.maxHops, false);
+        
+        if (settings.MaxUnresponHops != 250)
+            out.MaxUnresposiveHopsActive(settings.MaxUnresponHops);
+            
+        DWORD unResposiveHopCounter = 0;
+        DWORD tracekiller = settings.MaxUnresponHops * settings.pingsPerHop;
+             
+            for (DWORD hop = settings.startHop; hop < (settings.startHop + settings.maxHops); hop++)
+            {
+                out.startHop(hop);
 
-        for (DWORD hop = settings.startHop; hop < (settings.startHop + settings.maxHops); hop++)
-        {
-            out.startHop(hop); 
+                bool hopComplete = false;
 
-            bool hopComplete = false;
-			for (DWORD m = 0; (m < settings.pingsPerHop) & !hopComplete; m++)
-			{
-				if (terminator.isTerminated())
-					throw std::string("Terminate Event Occurred.");
+                if (unResposiveHopCounter >= tracekiller)
+                    throw std::string("Aborted as reached Max Number of Consecutive Unresponsive Hops.");
 
-				DWORD pingTime;
-				net::InetAddress resp;
-				ResponsePacketTypes respType = doTCPPing(rawInterface, target, rawInterface->getSourceAddress(), hop, resp, pingTime, settings.maxTimeout);
+                for (DWORD m = 0; (m < settings.pingsPerHop) & !hopComplete; m++)
+                {
 
-				if (respType == TCP_RST) {
-					// destination reached but port is closed, this maybe due to some hosts not allowing connections with ttl = 0. 
-					// resend ping with large ttl to see if its really closed. 
-					respType = doTCPPing(rawInterface, target, rawInterface->getSourceAddress(), 127, resp, pingTime, settings.maxTimeout);
-				}
-				
-                if (respType == NOT_VALID)
-                {
-                    out.pingResultTimeout();
-                }
-                else if (respType == ICMP_NO_ROUTE)
-                {
-                    out.pingResultBad (resp, "NO ROUTE");
-                    traceComplete = true;
-                    hopComplete = true;
-                }
-				else if (respType == ICMP_REDIRECT)
-                {
-                    out.pingResultBad (resp, "ICMP REDIRECT recieved");
-                    traceComplete = true;
-                    hopComplete = true;
-                }
-                else if (respType == TCP_RST)
-                {
-                    out.destinationReached (resp, pingTime, false);
-                    traceComplete = true;
-                    hopComplete = true;
-                }
-                else if (respType == TCP_SYNACK)
-                {
-                    for (DWORD m = 0; (m < settings.pingsPerHop) & !hopComplete; m++)
+
+                    if (terminator.isTerminated())
+                        throw std::string("Terminate Event Occurred.");
+
+
+                    DWORD pingTime;
+                    net::InetAddress resp;
+                    ResponsePacketTypes respType = doTCPPing(rawInterface, target, rawInterface->getSourceAddress(), hop, resp, pingTime, settings.maxTimeout);
+
+                    if (respType == TCP_RST) {
+                        // destination reached but port is closed, this maybe due to some hosts not allowing connections with ttl = 0. 
+                        // resend ping with large ttl to see if its really closed. 
+                        respType = doTCPPing(rawInterface, target, rawInterface->getSourceAddress(), 127, resp, pingTime, settings.maxTimeout);
+                    }
+
+                    if (respType == NOT_VALID)
                     {
-                        respType = doTCPPing(rawInterface, target, rawInterface->getSourceAddress(), hop, resp, pingTime, settings.maxTimeout);
+                        unResposiveHopCounter++;
+                        out.pingResultTimeout();
+                    }
+
+                    else if (respType == ICMP_NO_ROUTE)
+                    {
+                        out.pingResultBad(resp, "NO ROUTE");
+                        traceComplete = true;
+                        hopComplete = true;
+                    }
+                    else if (respType == ICMP_REDIRECT)
+                    {
+                        out.pingResultBad(resp, "ICMP REDIRECT recieved");
+                        traceComplete = true;
+                        hopComplete = true;
+                    }
+                    else if (respType == TCP_RST)
+                    {
+                        for (DWORD m = 0; (m < settings.pingsPerHop) & !hopComplete; m++)
+                        {
+                            tracekiller = 0;
+                            respType = doTCPPing(rawInterface, target, rawInterface->getSourceAddress(), hop, resp, pingTime, settings.maxTimeout);
+                            out.pingResultGood(resp, pingTime);
+
+                        }
+                        out.destinationReached(resp, pingTime, false);
+                        traceComplete = true;
+                        hopComplete = true;
+                    }
+                    else if (respType == TCP_SYNACK)
+                    {
+
+                        for (DWORD m = 0; (m < settings.pingsPerHop) & !hopComplete; m++)
+                        {
+                            tracekiller = 0;
+                            respType = doTCPPing(rawInterface, target, rawInterface->getSourceAddress(), hop, resp, pingTime, settings.maxTimeout);
+                            out.pingResultGood(resp, pingTime);
+
+                        }
+                        out.destinationReached(resp, pingTime, true);
+                        traceComplete = true;
+                        hopComplete = true;
+                    }
+                    else
+                    {
+                        unResposiveHopCounter = 0;
                         out.pingResultGood(resp, pingTime);
                     }
-                    out.destinationReached (resp, pingTime, true);
-                    traceComplete = true;
-                    hopComplete = true;
-                }
-                else
-                {
-                    out.pingResultGood (resp, pingTime);
-                }
 
-                // wait at least 0.5 second between pings....
-                // as sending the SYN packets too fast seems to trigger some form of flood detection on some hosts
-                if (!settings.noAntiFlood)
-                {
-                    if ((pingTime < 500) && !hopComplete)
+                    // wait at least 0.5 second between pings....
+                    // as sending the SYN packets too fast seems to trigger some form of flood detection on some hosts
+                    if (!settings.noAntiFlood)
                     {
-                        Sleep (500 - pingTime);
+                        if ((pingTime < 500) && !hopComplete)
+                        {
+                            Sleep(500 - pingTime);
+                        }
                     }
                 }
+
+                if (traceComplete)
+
+                    break;
+
+                out.endHop();
             }
 
-            if (traceComplete)
-                
-                break;
-            
-            out.endHop ();
-        }
-
-        out.endTrace();
+        
+        
+            duration = (clock() - start) / (double)CLOCKS_PER_SEC;
+            out.endTrace(duration);
     }
+    
 }

@@ -47,13 +47,14 @@ const char optionCharNoAntiFlood = 'F';
 const char optionCharUseLocalIF  = 'i';
 const char optionCharForceGW     = 'g';
 const char optionCharUseRawSock  = 'R';
+const char optionCharMaxUnresponHops  = 'X';
 
 void displayVersion ()
 {
-    cout << endl << "tracetcp v1.0.4 (c) 2016 L.M.Witek" << endl << "build date: " << __DATE__ << " " << __TIME__ << endl;
+    cout << endl << "tracetcp v1.0.5 (c) 2016 L.M.Witek" << endl << "build date: " << __DATE__ << " " << __TIME__ << endl;
     cout << "Homepage: http://SimulatedSimian.github.io/tracetcp" << endl;
     cout << "Issues? visit: https://github.com/SimulatedSimian/tracetcp/issues" << endl << endl;
-}
+    }
 
 void displayHelp (neo::CommandOptionParser& cp)
 {
@@ -86,7 +87,7 @@ bool populateSettings(neo::CommandOptionParser& cp, TCPTraceSettings& settings)
     if(cp.getOption(optionCharVersion).isPresent())
     {
         displayVersion();
-        return false;
+        //return false;
     }
 
     try
@@ -100,13 +101,15 @@ bool populateSettings(neo::CommandOptionParser& cp, TCPTraceSettings& settings)
 		settings.forceGW        = cp.getOption(optionCharForceGW).getParam(0, "");
 		//settings.forceInterface = cp.getOption(optionCharUseLocalIF).getParam(0, "");
 
-        settings.noAntiFlood    = cp.getOption(optionCharNoAntiFlood).isPresent();
-        settings.noRDNS         = cp.getOption(optionCharNoRDNS).isPresent();
-        settings.maxHops        = cp.getOption(optionCharMaxHops).getParamAsInt(0, 1, 255, 30);
-        settings.startHop       = cp.getOption(optionCharStartHop).getParamAsInt(0, 1, 255, 1);
-        settings.maxTimeout     = cp.getOption(optionCharTimeout).getParamAsInt(0, 1, 99999, 4000);
-        settings.portRange      = cp.getOption(optionCharPortRange).isPresent();
-        settings.pingsPerHop    = cp.getOption(optionCharPingsPerHop).getParamAsInt(0, 1, 10, 3);
+        settings.noAntiFlood     = cp.getOption(optionCharNoAntiFlood).isPresent();
+        settings.noRDNS          = cp.getOption(optionCharNoRDNS).isPresent();
+        settings.maxHops         = cp.getOption(optionCharMaxHops).getParamAsInt(0, 1, 255, 30);
+        settings.startHop        = cp.getOption(optionCharStartHop).getParamAsInt(0, 1, 255, 1);
+        settings.maxTimeout      = cp.getOption(optionCharTimeout).getParamAsInt(0, 1, 99999, 4000);
+        settings.portRange       = cp.getOption(optionCharPortRange).isPresent();
+        settings.pingsPerHop     = cp.getOption(optionCharPingsPerHop).getParamAsInt(0, 1, 100, 3);
+        settings.MaxUnresponHops = cp.getOption(optionCharMaxUnresponHops).getParamAsInt(0, 1, 250, 250);
+
         if (settings.portRange) 
         {
             settings.startPort  = cp.getOption(optionCharPortRange).getParamAsInt(0, 0, 0xffff, 0);
@@ -150,9 +153,10 @@ void setupCommandOptions (neo::CommandOptionParser& cp)
     cp.addOption(neo::CommandOption (optionCharOutputMode, 0, 0, "           Select condensed output mode."));
     cp.addOption(neo::CommandOption (optionCharEasyScan ,  2, 2, "p1 p2      Scan ports p1 to p2. Eqiv of: -cnr p1 p2 -h 128 -m 1 -p 1"));
     cp.addOption(neo::CommandOption (optionCharNoAntiFlood,0, 0, "           Disables the Anti-flood timer."));
-    //cp.addOption(neo::CommandOption (optionCharUseLocalIF, 1, 1, "address    Send from the specified local interface."));
+    cp.addOption(neo::CommandOption (optionCharUseLocalIF, 1, 1, "address    Send from the specified local interface."));
     cp.addOption(neo::CommandOption (optionCharForceGW,    1, 1, "address    Send to remote host using specified gateway."));
     cp.addOption(neo::CommandOption (optionCharUseRawSock, 0, 0, "           Use Raw Sockets to send packets."));
+    cp.addOption(neo::CommandOption(optionCharMaxUnresponHops, 1, 1, "           Abort after specified number of consecutive unresponsive hops."));
 }
 
 TraceTerminator g_traceTerminator;
@@ -174,6 +178,7 @@ BOOL ctrlHandler(DWORD ctrlType)
 
     return TRUE;
 } 
+
 
 
 int main(int argc, char* argv[])

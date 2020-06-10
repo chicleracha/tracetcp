@@ -48,6 +48,11 @@ void StandardTraceOutput::startTrace (net::InetAddress& target, bool noRDNS, DWO
     cout << endl << "Over a maximum of " << maxHops << " hops." << endl;
 }
 
+void StandardTraceOutput::MaxUnresposiveHopsActive (int hoptimer)
+{
+    cout << "\n WARNING!! The program will abort after " << hoptimer << " consecutive unresponsive hops. \n" << endl;
+}
+
 void StandardTraceOutput::startHop (int hopNumber)
 {
     cout << hopNumber << "\t";
@@ -59,7 +64,7 @@ void StandardTraceOutput::pingResultGood (net::InetAddress& respFrom, DWORD ping
     cout << pingTime << " ms" << "\t";
     m_goodPings++;
     m_lastGoodResp = respFrom;
-}
+   }
 
 void StandardTraceOutput::pingResultBad (net::InetAddress& respFrom, string message)
 {
@@ -73,8 +78,7 @@ void StandardTraceOutput::pingResultTimeout ()
 
 void StandardTraceOutput::destinationReached (net::InetAddress& respFrom, DWORD pingTime, bool portOpen)
 {
-    cout << "Destination Reached in " << pingTime << " ms. ";
-        
+    cout << respFrom.getIPAddressAsString() << "\t \n Destination Reached in " << pingTime << " ms. ";
     if (portOpen)
         cout << "Connection established to " << respFrom.getIPAddressAsString();
     else
@@ -106,7 +110,8 @@ void StandardTraceOutput::endHop ()
     }
 }
 
-void StandardTraceOutput::endTrace ()
+
+void StandardTraceOutput::endTrace (DWORD traceTime)
 {
-    cout << "Trace Complete." << endl;
+    cout << "Trace Completed in " << traceTime << " seconds. " << endl;
 }

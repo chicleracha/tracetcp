@@ -30,7 +30,7 @@ class StandardTraceOutput : public ITraceOutput
     private:
         int  m_goodPings;
         bool m_noRDNS;
-        net::InetAddress m_lastGoodResp;    
+        net::InetAddress m_lastGoodResp; 
 
     public:
         void startTrace (net::InetAddress& target, bool noRDNS, DWORD maxHops, bool noPort);
@@ -38,9 +38,10 @@ class StandardTraceOutput : public ITraceOutput
         void pingResultGood (net::InetAddress& respFrom, DWORD pingTime);
         void pingResultBad (net::InetAddress& respFrom, std::string message);
         void pingResultTimeout ();
+        void MaxUnresposiveHopsActive (int hoptimer);
         void destinationReached (net::InetAddress& respFrom, DWORD pingTime, bool portOpen);
         void endHop ();
-        void endTrace ();
+        void endTrace (DWORD traceTime);
 };
 
 #endif

@@ -23,7 +23,6 @@
 #pragma once
 
 #include <string>
-
 #include "net\socket.h"
 #include "ITraceOutput.h"
 
@@ -42,6 +41,7 @@ struct TCPTraceSettings
 	bool useRawSockets;
 	std::string forceGW;
 	std::string forceInterface;
+    DWORD MaxUnresponHops;
 };
 
 class TraceTerminator
