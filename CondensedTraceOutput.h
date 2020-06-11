@@ -43,6 +43,7 @@ class CondensedTraceOutput : public ITraceOutput
         void MaxUnresposiveHopsActive (int hoptimer);
         void destinationReached (net::InetAddress& respFrom, DWORD pingTime, bool portOpen);
         void endHop ();
+        void maxHopsReached ();
         void endTrace (DWORD traceTime);
 };
 

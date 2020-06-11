@@ -95,6 +95,10 @@ void CondensedTraceOutput::endHop ()
     }
 }
 
+void CondensedTraceOutput::maxHopsReached ()
+{
+    cout << "Aborted as reached Max Number of Consecutive Unresponsive Hops." << endl;
+}
 
 void CondensedTraceOutput::endTrace (DWORD traceTime)
 {

@@ -251,13 +251,17 @@ void doTraceTCP (TCPTraceSettings& settings, ITraceOutput& out, TraceTerminator&
              
             for (DWORD hop = settings.startHop; hop < (settings.startHop + settings.maxHops); hop++)
             {
+                if (unResposiveHopCounter >= tracekiller)
+                {
+                    out.maxHopsReached();
+                    break;
+                 }
+
                 out.startHop(hop);
 
                 bool hopComplete = false;
 
-                if (unResposiveHopCounter >= tracekiller)
-                    throw std::string("Aborted as reached Max Number of Consecutive Unresponsive Hops.");
-
+              
                 for (DWORD m = 0; (m < settings.pingsPerHop) & !hopComplete; m++)
                 {
 

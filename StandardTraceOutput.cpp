@@ -50,7 +50,7 @@ void StandardTraceOutput::startTrace (net::InetAddress& target, bool noRDNS, DWO
 
 void StandardTraceOutput::MaxUnresposiveHopsActive (int hoptimer)
 {
-    cout << "\n WARNING!! The program will abort after " << hoptimer << " consecutive unresponsive hops. \n" << endl;
+    cout << "WARNING!! The program will abort after " << hoptimer << " consecutive unresponsive hops." << endl;
 }
 
 void StandardTraceOutput::startHop (int hopNumber)
@@ -110,6 +110,10 @@ void StandardTraceOutput::endHop ()
     }
 }
 
+void StandardTraceOutput::maxHopsReached()
+{
+    cout << "Aborted as reached Max Number of Consecutive Unresponsive Hops." << endl;
+}
 
 void StandardTraceOutput::endTrace (DWORD traceTime)
 {
